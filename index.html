@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POSTURE</title>
+    
+    <link rel="icon" type="image/png" href="https://i.imgur.com/ntWCeDp.png">	
+	
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        :root {
+            --accent-glow: rgba(255, 255, 255, 0.2);
+            --pill-bg: rgba(10, 10, 10, 0.85);
+        }
+
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            cursor: none; 
+        }
+
+        body, html {
+            height: 100%; width: 100%; overflow: hidden;
+            background-color: #000;
+            font-family: 'Space Grotesk', sans-serif;
+            color: #ffffff;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- CURSOR --- */
+        .cursor-dot, .cursor-outline {
+            position: fixed; top: 0; left: 0; transform: translate(-50%, -50%);
+            border-radius: 50%; z-index: 9999; pointer-events: none;
+        }
+        .cursor-dot { width: 6px; height: 6px; background-color: white; }
+        .cursor-outline {
+            width: 45px; height: 45px; border: 1px solid rgba(255, 255, 255, 0.4);
+            transition: width 0.3s, height 0.3s; mix-blend-mode: difference;
+        }
+        body.hovered .cursor-outline { width: 65px; height: 65px; background-color: var(--accent-glow); border-color: transparent; }
+
+        /* --- BACKGROUND --- */
+        .bg-layer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
+            background-image: url('https://i.imgur.com/2fxxusm.png');
+            background-size: cover; background-position: center;
+        }
+        .noise-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            opacity: 0.08; pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        /* --- NAV PILL --- */
+        .top-bar-container {
+            position: fixed; top: 2rem; left: 50%; transform: translateX(-50%);
+            z-index: 10; width: 90%; max-width: 600px;
+            animation: floatPill 6s ease-in-out infinite;
+        }
+
+        .nav-pill {
+            display: flex; align-items: center; justify-content: space-between;
+            background: var(--pill-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            padding: 1rem 2.5rem; border-radius: 100px; border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-links { display: flex; gap: 1.8rem; list-style: none; flex: 1; align-items: center; }
+        .nav-links.right { justify-content: flex-end; }
+
+        .nav-links a {
+            text-decoration: none; color: #fff; opacity: 0.5; transition: 0.3s;
+            display: flex; align-items: center;
+        }
+        .nav-links i { font-size: 1.4rem; }
+        .nav-links a:hover { opacity: 1; transform: scale(1.15); filter: drop-shadow(0 0 8px #fff); }
+
+        .logo-center { display: flex; justify-content: center; flex: 0; margin: 0 1rem; }
+        .logo-center img { height: 32px; width: auto; filter: drop-shadow(0 0 10px rgba(255,255,255,0.3)); transition: 0.3s; }
+        .logo-center:hover img { transform: scale(1.05); }
+
+        /* --- CONTENT --- */
+        .content-center {
+            position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%);
+            text-align: center; width: 100%; padding: 0 1.5rem;
+        }
+
+        .countdown-label-top {
+            font-family: 'Syne', sans-serif; font-size: 0.7rem; font-weight: 800;
+            letter-spacing: 12px; text-transform: uppercase; color: rgba(255,255,255,0.4);
+            margin-bottom: 3rem; display: block;
+        }
+
+        .countdown-flex { 
+            display: flex; justify-content: center; align-items: center; gap: 2rem; 
+        }
+
+        .digit-box { 
+            display: flex; flex-direction: column; align-items: center; 
+            min-width: 100px; 
+            overflow: hidden; /* Importante para a animação */
+        }
+        
+        .digit {
+            font-family: 'Syne', sans-serif; font-weight: 800;
+            font-size: clamp(3rem, 10vw, 7.5rem); line-height: 1;
+            background: linear-gradient(180deg, #fff 40%, rgba(255,255,255,0.2) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            display: inline-block;
+            will-change: transform, opacity;
+        }
+
+        /* NOVA ANIMAÇÃO DOS NÚMEROS */
+        .digit.bump {
+            animation: digit-jump 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        @keyframes digit-jump {
+            0% { transform: translateY(30px); opacity: 0; filter: blur(10px); }
+            100% { transform: translateY(0); opacity: 1; filter: blur(0); }
+        }
+        
+        .unit-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 4px; color: rgba(255,255,255,0.3); margin-top: 15px; }
+        .separator { font-family: 'Syne', sans-serif; font-size: 2.5rem; color: rgba(255,255,255,0.1); margin-bottom: 30px; }
+
+        footer {
+            position: absolute; bottom: 2rem; width: 100%; text-align: center;
+            opacity: 0.2; font-size: 0.6rem; letter-spacing: 5px;
+        }
+
+        @keyframes floatPill { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(12px); } }
+
+        /* --- RESPONSIVIDADE MOBILE --- */
+        @media (max-width: 768px) {
+            * { cursor: auto; }
+            .cursor-dot, .cursor-outline { display: none; }
+            .top-bar-container { top: 1.5rem; width: 90%; }
+            .nav-pill { padding: 0.8rem 1.8rem; }
+            .nav-links i { font-size: 1.2rem; }
+            .logo-center img { height: 24px; }
+            .countdown-flex {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 2rem 1rem;
+                max-width: 300px;
+                margin: 0 auto;
+            }
+            .separator { display: none; }
+            .digit-box { min-width: unset; }
+            .digit { font-size: 4rem; }
+            .countdown-label-top { letter-spacing: 6px; font-size: 0.6rem; margin-bottom: 2rem; }
+        }
+    </style>
+</head>
+<body onclick="initAudio()">
+
+    <audio id="bg-music" loop>
+        <source src="https://cdn.pixabay.com/download/audio/2022/03/24/audio_344933a39e.mp3?filename=dark-drone-ambient-14378.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="cursor-dot" data-cursor-dot></div>
+    <div class="cursor-outline" data-cursor-outline></div>
+
+    <div class="bg-layer"></div>
+    <div class="noise-overlay"></div>
+
+    <div class="top-bar-container">
+        <nav class="nav-pill">
+            <ul class="nav-links left">
+                <li><a href="https://pstr.com.br" class="hover-trigger" title="Shop">
+                    <i class="ph ph-shopping-bag"></i>
+                </a></li>
+                <li><a href="https://instagram.com/posture.company" class="hover-trigger" title="Instagram">
+                    <i class="ph ph-instagram-logo"></i>
+                </a></li>
+            </ul>
+
+            <div class="logo-center">
+                <a href="https://pstr.com.br">
+                    <img src="https://i.imgur.com/07iSd3t.png" alt="POSTURE Logo">
+                </a>
+            </div>
+
+            <ul class="nav-links right">
+                <li><a href="mailto:contato@pstr.com.br" class="hover-trigger" title="Contact">
+                    <i class="ph ph-envelope-simple"></i>
+                </a></li>
+                <li><a href="https://www.pstr.com.br/pages/lookbook" class="hover-trigger" title="Lookbook">
+                    <i class="ph ph-books"></i>
+                </a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <main class="content-center">
+        <span class="countdown-label-top">POSTURE C1 IN</span>
+        <div class="countdown-flex" id="countdown">
+            <div class="digit-box">
+                <span class="digit" id="days">00</span>
+                <span class="unit-label">Days</span>
+            </div>
+            <span class="separator">/</span>
+            <div class="digit-box">
+                <span class="digit" id="hours">00</span>
+                <span class="unit-label">Hrs</span>
+            </div>
+            <span class="separator">/</span>
+            <div class="digit-box">
+                <span class="digit" id="minutes">00</span>
+                <span class="unit-label">Min</span>
+            </div>
+            <span class="separator">/</span>
+            <div class="digit-box">
+                <span class="digit" id="seconds">00</span>
+                <span class="unit-label">Sec</span>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        POSTURE © 2026
+    </footer>
+
+    <script>
+        // Cursor
+        const cursorDot = document.querySelector('[data-cursor-dot]');
+        const cursorOutline = document.querySelector('[data-cursor-outline]');
+        window.addEventListener('mousemove', (e) => {
+            const posX = e.clientX; const posY = e.clientY;
+            cursorDot.style.left = `${posX}px`; cursorDot.style.top = `${posY}px`;
+            cursorOutline.animate({ left: `${posX}px`, top: `${posY}px` }, { duration: 450, fill: "forwards" });
+        });
+
+        const triggers = document.querySelectorAll('.hover-trigger, a');
+        triggers.forEach(t => {
+            t.addEventListener('mouseenter', () => document.body.classList.add('hovered'));
+            t.addEventListener('mouseleave', () => document.body.classList.remove('hovered'));
+        });
+
+        // Audio 
+        let audioStarted = false;
+        function initAudio() {
+            if(!audioStarted) {
+                const audio = document.getElementById('bg-music');
+                audio.volume = 0.15;
+                audio.play();
+                audioStarted = true;
+            }
+        }
+
+        // Countdown com Animação
+        const target = new Date(2026, 2, 6, 0, 0, 0).getTime();
+        
+        function update() {
+            const now = new Date().getTime();
+            const gap = target - now;
+            if (gap < 0) return;
+
+            const d = Math.floor(gap / (1000 * 60 * 60 * 24));
+            const h = Math.floor((gap % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((gap % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((gap % (1000 * 60)) / 1000);
+
+            const timeData = [
+                { id: 'days', value: d < 10 ? '0'+d : d },
+                { id: 'hours', value: h < 10 ? '0'+h : h },
+                { id: 'minutes', value: m < 10 ? '0'+m : m },
+                { id: 'seconds', value: s < 10 ? '0'+s : s }
+            ];
+
+            timeData.forEach(item => {
+                const el = document.getElementById(item.id);
+                const newValue = item.value.toString();
+
+                // Só anima se o número mudou
+                if (el.innerText !== newValue) {
+                    el.innerText = newValue;
+                    el.classList.remove('bump');
+                    void el.offsetWidth; // Força reflow para reiniciar animação
+                    el.classList.add('bump');
+                }
+            });
+        }
+
+        setInterval(update, 1000); 
+        update();
+    </script>
+</body>
+</html>
