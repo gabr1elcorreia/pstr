@@ -24,8 +24,8 @@ jobs:
           node-version: '20'
       - name: Gerar site
         env:
-          BASE_PATH: ${{ vars.PAGES_BASE_PATH || format('/{0}/', github.event.repository.name) }}
-          SITE_URL: ${{ vars.PAGES_SITE_URL || format('https://{0}.github.io/{1}', github.repository_owner, github.event.repository.name) }}
+          BASE_PATH: /
+          SITE_URL: https://pstr.com.br
         run: |
           npm run build
           npm run verify
