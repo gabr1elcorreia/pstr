@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://posture-archive.visana-6584.chatgpt.site/sitemap.xml

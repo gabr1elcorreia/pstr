@@ -1,0 +1,10 @@
+{
+  "name": "posture-archive",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "verify": "node verify.mjs",
+    "preview": "npx serve dist"
+  }
+}
